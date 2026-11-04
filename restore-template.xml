@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <TMMsg_CreateTaskReq>
-
-  <processinginstructioninfo/>
-
   <taskInfo>
     <task>
       <taskFlags>
@@ -39,9 +36,6 @@
             <noImage>false</noImage>
             <useExactIndex>false</useExactIndex>
             <mediaOption>
-              <library/>
-              <mediaAgent/>
-              <drivePool/>
               <copyPrecedence>
                 <copyPrecedenceApplicable>false</copyPrecedenceApplicable>
               </copyPrecedence>
@@ -51,8 +45,6 @@
               <TimeZoneName>(UTC-08:00) Pacific Time (US &amp; Canada)</TimeZoneName>
             </timeZone>
             <listMedia>false</listMedia>
-            <browseJobId>67838</browseJobId>
-            <browseJobCommCellId>2</browseJobCommCellId>
           </browseOption>
           <destination>
             <destPath>c:\destpath</destPath>
@@ -64,7 +56,7 @@
             <restoreOnlyIfTargetExists>false</restoreOnlyIfTargetExists>
             <destinationInstance>
               <instanceName>DefaultInstanceName</instanceName>
-              <appName>File System</appName>
+              <appName>Windows File System</appName>
               <clientName>dest-client</clientName>
             </destinationInstance>
             <noOfStreams>10</noOfStreams>
@@ -93,9 +85,6 @@
           </fileOption>
           <impersonation>
             <useImpersonation>false</useImpersonation>
-            <user>
-              <userName></userName>
-            </user>
           </impersonation>
           <commonOptions>
             <overwriteFiles>true</overwriteFiles>
@@ -123,7 +112,6 @@
           <distributedAppsRestoreOptions>
             <distributedRestore>false</distributedRestore>
             <isMultiNodeRestore>false</isMultiNodeRestore>
-            <backupConfiguration/>
             <clientType>WINDOWS</clientType>
           </distributedAppsRestoreOptions>
         </restoreOptions>
