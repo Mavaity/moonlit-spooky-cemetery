@@ -38,6 +38,9 @@ function new-xml-files {
         [string] $stringBatchStartDatetime = $batchStartDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $stringBatchEndDatetime = $batchEndDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $subDir = Join-Path -Path $PWD -ChildPath $stringBatchStartDate
+        [string] $backusetSubPath = "$stringBatchStartDate.$ClientName.$BackupsetName"
+        [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$stringBatchStartDate\$ClientName.$BackupsetName"
+        #write-host $fullDestinationPath
 
         # Create Directory if needed
         New-Item -Path $subDir -ItemType Directory -Force | Out-Null
@@ -52,7 +55,9 @@ function new-xml-files {
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.backupset.backupSetName = $BackupsetName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.timeRange.fromTimeValue = $stringBatchStartDatetime
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.timerange.toTimeValue = $stringBatchEndDatetime
-        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destPath = "$DestinationPath\$stringBatchEndDate"
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destPath = $fullDestinationPath
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destClient.clientName = $ClientName
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.clientName = $ClientName
 
         # Save the modified object to a new destination file
         $xml.Save("$subDir\$ClientName-$BackupSetName-$stringBatchStartDate.xml")
