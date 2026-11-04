@@ -1,7 +1,8 @@
 **Prerequisite:**
 
 `Set-ExecutionPolicy RemoteSigned`
-`Install-Module Thread-Jobs -scope CurrentUser
+
+`Install-Module Thread-Jobs -scope CurrentUser`
 
 **Example to build weekly xml files for mass restores:**
 
