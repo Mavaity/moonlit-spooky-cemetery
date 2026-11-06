@@ -69,6 +69,7 @@ function new-xml-files {
 }
 
 if ($StartDatetime -and $EndDatetime) {
+    Write-Host "BackupsetFile : $BackupsetFile"
     if ($BackupsetFile) {
         $data = Import-Csv -Path $BackupsetFile
 
@@ -78,7 +79,7 @@ if ($StartDatetime -and $EndDatetime) {
         }
 
     } elseif ($BackupsetName -and $ClientName) {
-        Write-Host "Processing client: $($row.ClientName) Backupset: $($row.BackupsetName)"
+        Write-Host "Processing client: $ClientName Backupset: $BackupsetName"
         new-xml-files -ClientName $ClientName -BackupsetName $BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval
     } else {
         throw "Specify either a Backupset name and ClientName or a BackupSetFile (CSV format ClientName,BackupsetName)"

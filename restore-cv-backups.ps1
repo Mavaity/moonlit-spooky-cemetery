@@ -5,8 +5,13 @@ param (
     [string] $CvServer
 )
 
+#get full path
+$XmlFilePath = Resolve-Path $XmlFilePath
+Write-Host "Processing files in: $XmlFilePath"
+
 #Initialize Log File
-$null = New-Item -Path $outfile -ItemType File -Force
+$logFilePath = "$XmlFilePath\$(Split-Path $XmlFilePath -Leaf)-log.txt"
+$null = New-Item -Path $logFilePath -ItemType File -Force
 
 
 # Set Commvault Path
@@ -26,7 +31,7 @@ Write-Host "XML File Path: $XmlFilePath" | Tee-Object -FilePath "$XmlFilePath\$(
 
 # Log into Commvault Server
 try {
-    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append 
+    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath $logFilePath -Append 
 if ($lastexitcode -ne 0) {        
         $errors = $errors -join "`n"
     }
@@ -37,16 +42,16 @@ catch {
 
 # Add a job for each XML file
 foreach ($file in $files) {
-    Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+    Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath $logFilePath -Append
 
     try{
-        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath $logFilePath -Append
     if ($lastexitcode -ne 0) {        
             $errors = $errors -join "`n"
         }
     }
     catch {
-        write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+        write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath $logFilePath -Append
     }
 
 # $outputRowData = [PsCustomObject]@{
@@ -57,13 +62,13 @@ foreach ($file in $files) {
 
 # Logout from Commvault
 try{
-    & qlogout.exe | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+    & qlogout.exe | Tee-Object -FilePath $logFilePath -Append
 if ($lastexitcode -ne 0) {        
         $errors = $errors -join "`n"
     }
 }
 catch {
-    write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append    
+    write-error "$_" | Tee-Object -FilePath $logFilePath -Append    
 }
 
 # Throw any errors
