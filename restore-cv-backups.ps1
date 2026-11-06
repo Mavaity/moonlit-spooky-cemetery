@@ -5,40 +5,77 @@ param (
     [string] $CvServer
 )
 
+#Initialize Log File
+$null = New-Item -Path $outfile -ItemType File -Force
+
+
+# Set Commvault Path
 if (!$env:GALAXY_BASE) {
     $env:GALAXY_BASE = "C:\Program Files\Commvault\ContentStore\Base"
 }
 $env:Path += ";$env.GALAXY_BASE"
 
-
+# Get XML Files in $XmlFilePath
 $files = Get-ChildItem -Path $XmlFilePath -Filter *.xml -File -Recurse
-
-# Start thread jobs and track their handles
-$jobs = foreach ($file in $files) {
-    Start-ThreadJob -ScriptBlock {
-        param(
-            [string] $XmlFilePath,
-            $file,
-            [PScredential] $CvCred = $using:CvCred,
-            [string] $CvFqdn = $using:CvFqdn,
-            [string] $CvServer = $using:CvServer            
-        )
-        Write-Host "XML File Path: $XmlFilePath"
-        Write-Host $file.basename
-        & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password |Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append
-
-        Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append
-        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append
-        & qlogout.exe | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append
-    } -ArgumentList $XmlFilePath,$file
+try {
+    Write-Host "XML File Path: $XmlFilePath" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+if ($lastexitcode -ne 0) {        
+        $errors = $errors -join "`n"
+    }
+}
+catch {
+    write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append    
 }
 
-# Wait for all parallel threads to finish
-$jobs | Wait-Job | Out-Null
+# # Write Job Tracking CSV
+# $outfile = "$XmlFilePath\job-tracking.csv"
+# $null = New-Item -Path $outfile -ItemType File -Force
 
-# Retrieve the results and clean up memory
-$results = $jobs | Receive-Job
-$jobs | Remove-Job
+# Log into Commvault Server
+try {
+    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append 
+if ($lastexitcode -ne 0) {        
+        $errors = $errors -join "`n"
+    }
+}
+catch {
+    write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append    
+}
 
-# Display output
-$results
+# Add a job for each XML file
+foreach ($file in $files) {
+    Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+
+    try{
+        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+    if ($lastexitcode -ne 0) {        
+            $errors = $errors -join "`n"
+        }
+    }
+    catch {
+        write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+    }
+
+# $outputRowData = [PsCustomObject]@{
+#     "" = 
+# }
+
+}
+
+# Logout from Commvault
+try{
+    & qlogout.exe | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+if ($lastexitcode -ne 0) {        
+        $errors = $errors -join "`n"
+    }
+}
+catch {
+    write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append    
+}
+
+# Throw any errors
+If ($errors) {
+    Write-Host "The session included the following errors:`n"
+    throw "$errors `n"
+}
+
