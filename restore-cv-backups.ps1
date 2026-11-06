@@ -17,15 +17,8 @@ $env:Path += ";$env.GALAXY_BASE"
 
 # Get XML Files in $XmlFilePath
 $files = Get-ChildItem -Path $XmlFilePath -Filter *.xml -File -Recurse
-try {
-    Write-Host "XML File Path: $XmlFilePath" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
-if ($lastexitcode -ne 0) {        
-        $errors = $errors -join "`n"
-    }
-}
-catch {
-    write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append    
-}
+Write-Host "XML File Path: $XmlFilePath" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
+
 
 # # Write Job Tracking CSV
 # $outfile = "$XmlFilePath\job-tracking.csv"
