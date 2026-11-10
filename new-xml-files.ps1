@@ -79,7 +79,7 @@ if ($StartDatetime -and $EndDatetime) {
 
         foreach ($row in $data) {
             Write-Host "Processing client: $($row.ClientName) Backupset: $($row.BackupsetName)"
-            new-xml-files -ClientName $row.ClientName -BackupsetName $row.BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval -AppName $AppName
+            new-xml-files -SourceClientName $row.ClientName -BackupsetName $row.BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationClientName $DestinationClientName -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval -AppName $AppName
         }
 
     } elseif ($BackupsetName -and $ClientName) {
