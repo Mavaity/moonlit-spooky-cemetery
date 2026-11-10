@@ -1,12 +1,13 @@
 param (
     [string] $BackupsetName,
-    [string] $ClientName,
+    [string] $SourceClientName,
     [string] $BackupsetFile,
     [datetime] $StartDatetime,
     [datetime] $EndDatetime,
+    [string] $DestinationClientName,
     [string] $DestinationPath,
     [int] $Interval,
-    [string] $IntervalUnit
+    [string] $IntervalUnit,
     [string] $AppName = "File System"
 )
 
@@ -40,7 +41,6 @@ function new-xml-files {
         [string] $stringBatchStartDatetime = $batchStartDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $stringBatchEndDatetime = $batchEndDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $subDir = Join-Path -Path $PWD -ChildPath $stringBatchStartDate
-        [string] $backusetSubPath = "$stringBatchStartDate.$ClientName.$BackupsetName"
         [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$stringBatchStartDate\$ClientName.$BackupsetName"
         #write-host $fullDestinationPath
 
@@ -53,13 +53,13 @@ function new-xml-files {
         # Navigate to the node and replace the value
         $xml.TMMsg_CreateTaskReq.taskInfo.associations.backupsetName = $BackupsetName
         $xml.TMMsg_CreateTaskReq.taskInfo.associations.clientName = $ClientName 
-        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.backupset.clientName = $ClientName
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.backupset.clientName = $SourceClientName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.backupset.backupSetName = $BackupsetName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.timeRange.fromTimeValue = $stringBatchStartDatetime
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.timerange.toTimeValue = $stringBatchEndDatetime
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destPath = $fullDestinationPath
-        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destClient.clientName = $ClientName
-        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.clientName = $ClientName
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destClient.clientName = $DestinationClientName
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.clientName = $DestinationClientName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.appName = $AppName
 
         # Save the modified object to a new destination file
