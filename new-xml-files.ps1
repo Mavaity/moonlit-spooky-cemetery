@@ -42,7 +42,7 @@ function new-xml-files {
         [string] $stringBatchStartDatetime = $batchStartDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $stringBatchEndDatetime = $batchEndDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $subDir = Join-Path -Path $PWD -ChildPath $stringBatchStartDate
-        [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$stringBatchStartDate\$ClientName.$BackupsetName"
+        [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$stringBatchStartDate\$SourceClientName.$BackupsetName"
         #write-host $fullDestinationPath
 
         # Create Directory if needed
@@ -53,7 +53,7 @@ function new-xml-files {
 
         # Navigate to the node and replace the value
         $xml.TMMsg_CreateTaskReq.taskInfo.associations.backupsetName = $BackupsetName
-        $xml.TMMsg_CreateTaskReq.taskInfo.associations.clientName = $ClientName 
+        $xml.TMMsg_CreateTaskReq.taskInfo.associations.clientName = $SourceClientName 
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.backupset.clientName = $SourceClientName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.backupset.backupSetName = $BackupsetName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.browseOption.timeRange.fromTimeValue = $stringBatchStartDatetime
@@ -64,7 +64,7 @@ function new-xml-files {
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.appName = $AppName
 
         # Save the modified object to a new destination file
-        $xml.Save("$subDir\$ClientName-$BackupSetName-$stringBatchStartDate.xml")
+        $xml.Save("$subDir\$SourceClientName-$BackupSetName-$stringBatchStartDate.xml")
         
         #Increment the start date
         [datetime] $batchStartDatetime = $batchEndDatetime
