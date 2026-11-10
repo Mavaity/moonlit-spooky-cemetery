@@ -7,6 +7,7 @@ param (
     [string] $DestinationPath,
     [int] $Interval,
     [string] $IntervalUnit
+    [string] $AppName = "File System"
 )
 
 function new-xml-files {
@@ -17,7 +18,8 @@ function new-xml-files {
         [datetime] $EndDatetime,
         [string] $DestinationPath,
         [int] $Interval,
-        [string] $IntervalUnit
+        [string] $IntervalUnit,
+        [string] $AppName
     )
     if ($IntervalUnit -eq "months") {
         $StartDatetime = get-date $StartDatetime -Day 1
@@ -58,6 +60,7 @@ function new-xml-files {
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destPath = $fullDestinationPath
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destClient.clientName = $ClientName
         $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.clientName = $ClientName
+        $xml.TMMsg_CreateTaskReq.taskInfo.subTasks.options.restoreOptions.destination.destinationInstance.appName = $AppName
 
         # Save the modified object to a new destination file
         $xml.Save("$subDir\$ClientName-$BackupSetName-$stringBatchStartDate.xml")
@@ -75,7 +78,7 @@ if ($StartDatetime -and $EndDatetime) {
 
         foreach ($row in $data) {
             Write-Host "Processing client: $($row.ClientName) Backupset: $($row.BackupsetName)"
-            new-xml-files -ClientName $row.ClientName -BackupsetName $row.BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval
+            new-xml-files -ClientName $row.ClientName -BackupsetName $row.BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval -AppName $AppName
         }
 
     } elseif ($BackupsetName -and $ClientName) {
