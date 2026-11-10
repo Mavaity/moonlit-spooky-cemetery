@@ -14,9 +14,10 @@ param (
 function new-xml-files {
     param (        
         [string] $BackupsetName,
-        [string] $ClientName,
+        [string] $SourceClientName,
         [datetime] $StartDatetime,
         [datetime] $EndDatetime,
+        [string] $DestinationClientName,
         [string] $DestinationPath,
         [int] $Interval,
         [string] $IntervalUnit,
@@ -83,7 +84,7 @@ if ($StartDatetime -and $EndDatetime) {
 
     } elseif ($BackupsetName -and $ClientName) {
         Write-Host "Processing client: $ClientName Backupset: $BackupsetName"
-        new-xml-files -ClientName $ClientName -BackupsetName $BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval
+        new-xml-files -SurceClientName $SourceClientName -BackupsetName $BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationClientName $DestinationClientName -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval
     } else {
         throw "Specify either a Backupset name and ClientName or a BackupSetFile (CSV format ClientName,BackupsetName)"
         exit
