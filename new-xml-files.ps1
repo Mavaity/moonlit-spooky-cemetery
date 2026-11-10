@@ -82,8 +82,8 @@ if ($StartDatetime -and $EndDatetime) {
             new-xml-files -SourceClientName $row.ClientName -BackupsetName $row.BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationClientName $DestinationClientName -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval -AppName $AppName
         }
 
-    } elseif ($BackupsetName -and $ClientName) {
-        Write-Host "Processing client: $ClientName Backupset: $BackupsetName"
+    } elseif ($BackupsetName -and $SourceClientName) {
+        Write-Host "Processing client: $SourceClientName Backupset: $BackupsetName"
         new-xml-files -SurceClientName $SourceClientName -BackupsetName $BackupsetName -StartDatetime $StartDatetime -EndDatetime $EndDatetime -DestinationClientName $DestinationClientName -DestinationPath $DestinationPath -IntervalUnit $IntervalUnit -Interval $Interval -AppName $AppName
     } else {
         throw "Specify either a Backupset name and ClientName or a BackupSetFile (CSV format ClientName,BackupsetName)"
