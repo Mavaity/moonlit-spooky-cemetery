@@ -6,13 +6,20 @@ param (
 )
 
 #get full path
-$XmlFilePath = Resolve-Path $XmlFilePath
-Write-Host "Processing files in: $XmlFilePath"
+$fullXmlFilePath = Resolve-Path $XmlFilePath
+Write-Host "Processing files in: $fullXmlFilePath"
 
-#Initialize Log File
-$logFilePath = "$XmlFilePath\$(Split-Path $XmlFilePath -Leaf)-log.txt"
-$null = New-Item -Path $logFilePath -ItemType File -Force
+#Initialize Global Log File
+$globalLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$(Split-Path $fullXmlFilePath -Leaf)-log.txt"
+$null = New-Item -Path $globalLogFile -ItemType File -Force
 
+# Create Job Tracking CSV
+$restoreJobCsv = Join-Path -Path $fullXmlFilePath -ChildPath restore-jobs.csv
+'"taskId","jobId","clientName","backupsetName"' | Set-Content -Path $restoreJobCsv -Encoding UTF8
+
+# Get XML Files in $fullXmlFilePath
+$files = Get-ChildItem -Path $fullXmlFilePath -Filter *.xml -File -Recurse
+Write-Host "XML File Path: $fullXmlFilePath" | Tee-Object -FilePath $globalLogFile -Append
 
 # Set Commvault Path
 if (!$env:GALAXY_BASE) {
@@ -20,55 +27,68 @@ if (!$env:GALAXY_BASE) {
 }
 $env:Path += ";$env.GALAXY_BASE"
 
-# Get XML Files in $XmlFilePath
-$files = Get-ChildItem -Path $XmlFilePath -Filter *.xml -File -Recurse
-Write-Host "XML File Path: $XmlFilePath" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append
-
-
-# # Write Job Tracking CSV
-# $outfile = "$XmlFilePath\job-tracking.csv"
-# $null = New-Item -Path $outfile -ItemType File -Force
-
 # Log into Commvault Server
 try {
-    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath $logFilePath -Append 
+    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath $globalLogFile -Append 
 if ($lastexitcode -ne 0) {        
         $errors = $errors -join "`n"
     }
 }
 catch {
-    write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($XmlFilePath.BaseName)-log.txt" -Append    
+    write-error "$_" | Tee-Object -FilePath $globalLogFile -Append    
 }
 
 # Add a job for each XML file
 foreach ($file in $files) {
-    Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath $logFilePath -Append
+    
+    #Initialize Local Log File
+    $localLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$($file.BaseName)-log.txt"
+    $null = New-Item -Path $globalLogFile -ItemType File -Force
+
+    [string] $return = ""
+    Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append
+
+    # Load the XML file
+    [xml] $xml = Get-Content -Path $file
+
+    # Navigate to the node and get the value
+    $backupsetName = $xml.TMMsg_CreateTaskReq.taskInfo.associations.backupsetName
+    $sourceClientName = $xml.TMMsg_CreateTaskReq.taskInfo.associations.clientName
 
     try{
-        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath $logFilePath -Append
+        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append |Tee-Object -Variable return
     if ($lastexitcode -ne 0) {        
             $errors = $errors -join "`n"
+        } else {
+            # create an object with the header names
+            $row = [pscustomobject]@{
+                taskId     = $return.TMMsg_CreateTaskResp.taskId
+                jobId = $return.TMMsg_CreateTaskResp.jobIds.val
+                clientName = $sourceClientName
+                backupsetName = $backupsetName
+            }
+
+            # Append the row to job tracking CSV
+            $row | Export-Csv -Path $restoreJobCsv -Append -NoTypeInformation -Encoding UTF8
         }
+    
+    
     }
     catch {
-        write-error "$_" | Tee-Object -FilePath "$XmlFilePath\$($file.BaseName)-log.txt" -Append | Tee-Object -FilePath $logFilePath -Append
+        write-error "$_" | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append
     }
-
-# $outputRowData = [PsCustomObject]@{
-#     "" = 
-# }
 
 }
 
 # Logout from Commvault
 try{
-    & qlogout.exe | Tee-Object -FilePath $logFilePath -Append
+    & qlogout.exe | Tee-Object -FilePath $globalLogFile -Append
 if ($lastexitcode -ne 0) {        
         $errors = $errors -join "`n"
     }
 }
 catch {
-    write-error "$_" | Tee-Object -FilePath $logFilePath -Append    
+    write-error "$_" | Tee-Object -FilePath $globalLogFile -Append    
 }
 
 # Throw any errors
