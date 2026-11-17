@@ -7,7 +7,7 @@ param (
 
 #get full path
 $fullXmlFilePath = Resolve-Path $XmlFilePath
-Write-Host "Processing files in: $fullXmlFilePath"
+Write-Host "Processing files in: $fullXmlFilePath" | Tee-Object -FilePath $globalLogFile -Append
 
 #Initialize Global Log File
 $globalLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$(Split-Path $fullXmlFilePath -Leaf)-log.txt"
@@ -43,13 +43,13 @@ foreach ($file in $files) {
     
     #Initialize Local Log File
     $localLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$($file.BaseName)-log.txt"
-    $null = New-Item -Path $globalLogFile -ItemType File -Force
+    $null = New-Item -Path $localLogFile -ItemType File -Force
 
     [string] $return = ""
     Write-Host "Processing: $($file.FullName)" | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append
 
     # Load the XML file
-    [xml] $xml = Get-Content -Path $file
+    [xml] $xml = Get-Content -Path $file.fullname
 
     # Navigate to the node and get the value
     $backupsetName = $xml.TMMsg_CreateTaskReq.taskInfo.associations.backupsetName
