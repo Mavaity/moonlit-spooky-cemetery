@@ -56,14 +56,15 @@ foreach ($file in $files) {
     $sourceClientName = $xml.TMMsg_CreateTaskReq.taskInfo.associations.clientName
 
     try{
-        & qoperation.exe execute -af $file.FullName | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append |Tee-Object -Variable return
+        & qoperation.exe execute -af $file.FullName | Tee-Object -Variable return | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append 
     if ($lastexitcode -ne 0) {        
             $errors = $errors -join "`n"
         } else {
             # create an object with the header names
+            $returnXml = [xml]$return
             $row = [pscustomobject]@{
-                taskId     = $return.TMMsg_CreateTaskResp.taskId
-                jobId = $return.TMMsg_CreateTaskResp.jobIds.val
+                taskId     = $returnXml.TMMsg_CreateTaskResp.taskId
+                jobId = $returnXml.TMMsg_CreateTaskResp.jobIds.val
                 clientName = $sourceClientName
                 backupsetName = $backupsetName
             }
