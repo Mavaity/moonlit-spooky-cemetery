@@ -5,12 +5,13 @@ param (
     [string] $CvServer
 )
 
-#Initialize Global Log File
-$globalLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$(Split-Path $fullXmlFilePath -Leaf)-log.txt"
-$null = New-Item -Path $globalLogFile -ItemType File -Force
 
 #get full path
 $fullXmlFilePath = Resolve-Path $XmlFilePath
+
+#Initialize Global Log File
+$globalLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$(Split-Path $fullXmlFilePath -Leaf)-log.txt"
+$null = New-Item -Path $globalLogFile -ItemType File -Force
 Write-Host "Processing files in: $fullXmlFilePath" | Tee-Object -FilePath $globalLogFile -Append
 
 # Create Job Tracking CSV
