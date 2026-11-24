@@ -28,7 +28,7 @@ Write-Host "Restore Job CSV is: $restoreJobCsv" | Tee-Object -FilePath $globalLo
 
 # Log into Commvault Server
 try {
-    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath $globalLogFile -Append
+    & qlogin.exe -csn $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath $globalLogFile -Append
 if ($lastexitcode -ne 0) {        
         $errors = $errors -join "`n"
     }
