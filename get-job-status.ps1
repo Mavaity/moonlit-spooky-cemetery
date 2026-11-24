@@ -52,7 +52,7 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
         if ($lastexitcode -ne 0) {
             $errors = $errors -join "`n"
         } else {
-            [PSCustomObject]@{
+            $row = [PSCustomObject]@{
                 cvDate = $cvDate
                 clientName = $clientName
                 backupsetName = $backupsetName
@@ -60,6 +60,9 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
                 status = $jobStatus.GalaxyUtilities_QgetJobsRespMsg.jobs.jobStatus
                 completePercentage = $jobStatus.GalaxyUtilities_QgetJobsRespMsg.jobs.completePercentage
             }
+
+            $row | Export-Csv -Path $restoreJobStatusCsv -Append -NoTypeInformation -Encoding UTF8
+
         }
     } catch {
         write-error "$_" | Tee-Object -FilePath $globalLogFile -Append
@@ -67,7 +70,7 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
 
 }
 
-$restoreJobStatus | Export-Csv -Path $restoreJobStatusCsv -Append -NoTypeInformation -Encoding UTF8
+$row | Export-Csv -Path $restoreJobStatusCsv -Append -NoTypeInformation -Encoding UTF8
 
 # Logout from Commvault
 try{
