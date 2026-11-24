@@ -19,7 +19,7 @@ Write-Host "Log file is: $globalLogFile" | Tee-Object -FilePath $globalLogFile -
 # Create Job Status Tracking CSV
 $restoreJobStatusCsv = Join-Path -Path $fullXmlFilePath -ChildPath restore-job-status.csv
 Write-Host "Restore Job Status CSV is: $restoreJobStatusCsv" | Tee-Object -FilePath $globalLogFile -Append
-'"cvDate","taskId","jobId","clientName","backupsetName"' | Set-Content -Path $restoreJobStatusCsv -Encoding UTF8
+$null | Set-Content -Path $restoreJobStatusCsv -Encoding UTF8
 
 #get restore job csv file name
 $restoreJobCsv = Join-Path -Path $fullXmlFilePath -ChildPath "restore-jobs.csv"
@@ -61,7 +61,7 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
                 completePercentage = $jobStatus.GalaxyUtilities_QgetJobsRespMsg.jobs.completePercentage
             }
 
-            $row | Export-Csv -Path $restoreJobStatusCsv -Append -NoTypeInformation -Encoding UTF8
+            $row | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath $restoreJobStatusCsv -Encoding utf8
 
         }
     } catch {
@@ -69,8 +69,6 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
     }   
 
 }
-
-$row | Export-Csv -Path $restoreJobStatusCsv -Append -NoTypeInformation -Encoding UTF8
 
 # Logout from Commvault
 try{
