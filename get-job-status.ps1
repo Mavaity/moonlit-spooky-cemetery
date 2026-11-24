@@ -25,6 +25,11 @@ $null | Set-Content -Path $restoreJobStatusCsv -Encoding UTF8
 $restoreJobCsv = Join-Path -Path $fullXmlFilePath -ChildPath "restore-jobs.csv"
 Write-Host "Restore Job CSV is: $restoreJobCsv" | Tee-Object -FilePath $globalLogFile -Append
 
+# Set Commvault Path
+if (!$env:GALAXY_BASE) {
+    $env:GALAXY_BASE = "C:\Program Files\Commvault\ContentStore\Base"
+}
+$env:Path += ";$env.GALAXY_BASE"
 
 # Log into Commvault Server
 try {
@@ -63,7 +68,7 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
                 rubrikBackup = $null
             }
 
-            $row | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath $restoreJobStatusCsv -Encoding utf8
+            $row | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath $restoreJobStatusCsv -Encoding utf8 -Append
 
         }
     } catch {
