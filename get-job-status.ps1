@@ -45,10 +45,6 @@ catch {
 $restoreJobs = Import-Csv -Path $restoreJobCsv
 
 $restoreJobStatus = foreach ($job in $restoreJobs) {
-    $cvDate = $job.cvDate
-    $clientName = $job.clientName
-    $backupsetName = $job.backupsetName
-    $jobId = $job.jobId
 
     Write-Host "Getting job status of job $jobId for $backupsetName on $clientName for date range starting $cvDate" | Tee-Object -FilePath $globalLogFile -Append
     [xml] $jobStatus = try {
@@ -68,14 +64,13 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
                 rubrikBackup = $null
             }
 
-            $row | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath $restoreJobStatusCsv -Encoding utf8 -Append
-
         }
     } catch {
         write-error "$_" | Tee-Object -FilePath $globalLogFile -Append
     }   
 
 }
+$restoreJobStatus | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath $restoreJobStatusCsv -Encoding utf8 -Append
 
 # Logout from Commvault
 try{

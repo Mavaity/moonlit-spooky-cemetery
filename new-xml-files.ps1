@@ -8,7 +8,8 @@ param (
     [string] $DestinationPath,
     [int] $Interval,
     [string] $IntervalUnit,
-    [string] $AppName = "File System"
+    [string] $AppName = "File System",
+    [bool] $DateFolder = $true
 )
 
 function new-xml-files {
@@ -42,7 +43,12 @@ function new-xml-files {
         [string] $stringBatchStartDatetime = $batchStartDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $stringBatchEndDatetime = $batchEndDatetime.ToString("yyyy-MM-dd hh:mm:ss")
         [string] $subDir = Join-Path -Path $PWD -ChildPath $stringBatchStartDate
-        [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$stringBatchStartDate\$SourceClientName.$BackupsetName"
+        if ($DateFolder -eq $true) {
+            [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$stringBatchStartDate\$SourceClientName.$BackupsetName"
+        } else {
+            [string] $fullDestinationPath = Join-Path -Path $DestinationPath -ChildPath "$SourceClientName.$BackupsetName"
+
+        }
         #write-host $fullDestinationPath
 
         # Create Directory if needed
