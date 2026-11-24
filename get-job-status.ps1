@@ -59,6 +59,7 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
                 jobId = $jobId
                 status = $jobStatus.GalaxyUtilities_QgetJobsRespMsg.jobs.jobStatus
                 completePercentage = $jobStatus.GalaxyUtilities_QgetJobsRespMsg.jobs.completePercentage
+                failureReason = $jobStatus.GalaxyUtilities_QgetJobsRespMsg.jobs.failureReasons.eventMsg
             }
 
             $row | ConvertTo-Csv -NoTypeInformation | ForEach-Object { $_ -replace '"', '' } | Out-File -FilePath $restoreJobStatusCsv -Encoding utf8
