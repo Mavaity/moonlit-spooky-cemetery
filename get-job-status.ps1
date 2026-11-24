@@ -67,6 +67,8 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
 
 }
 
+$restoreJobStatus | Export-Csv -Path $restoreJobStatusCsv -Append -NoTypeInformation -Encoding UTF8
+
 # Logout from Commvault
 try{
     & qlogout.exe | Tee-Object -FilePath $globalLogFile -Append
