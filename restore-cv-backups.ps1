@@ -1,7 +1,6 @@
 param (
     [string] $XmlFilePath,
     [PScredential] $CvCred,
-    [string] $CvFqdn,
     [string] $CvServer
 )
 
@@ -11,8 +10,8 @@ $fullXmlFilePath = Resolve-Path $XmlFilePath
 
 #Initialize Global Log File
 $globalLogFile = Join-Path -Path $fullXmlFilePath -ChildPath "$(Split-Path $fullXmlFilePath -Leaf)-log.txt"
-$null = New-Item -Path $globalLogFile -ItemType File -Force
 Write-Host "Processing files in: $fullXmlFilePath" | Tee-Object -FilePath $globalLogFile -Append
+$null = New-Item -Path $globalLogFile -ItemType File -Force
 
 # Create Job Tracking CSV
 $restoreJobCsv = Join-Path -Path $fullXmlFilePath -ChildPath restore-jobs.csv
@@ -58,7 +57,7 @@ foreach ($file in $files) {
 
     try{
         & qoperation.exe execute -af $file.FullName | Tee-Object -Variable return | Tee-Object -FilePath $localLogFile -Append | Tee-Object -FilePath $globalLogFile -Append 
-    if ($lastexitcode -ne 0) {        
+        if ($lastexitcode -ne 0) {        
             $errors = $errors -join "`n"
         } else {
             # create an object with the header names
