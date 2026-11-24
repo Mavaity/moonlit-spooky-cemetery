@@ -1,6 +1,6 @@
 param (
     [string] $XmlFilePath,
-    # [PScredential] $CvCred,
+    [PScredential] $CvCred,
     [string] $CvServer
 )
 
@@ -25,6 +25,18 @@ Write-Host "Restore Job Status CSV is: $restoreJobStatusCsv" | Tee-Object -FileP
 $restoreJobCsv = Join-Path -Path $fullXmlFilePath -ChildPath "restore-jobs.csv"
 Write-Host "Restore Job CSV is: $restoreJobCsv" | Tee-Object -FilePath $globalLogFile -Append
 
+
+# Log into Commvault Server
+try {
+    & qlogin.exe -cs $CvServer -u $CvCred.UserName -clp $CvCred.GetNetworkCredential().Password | Tee-Object -FilePath $globalLogFile -Append
+if ($lastexitcode -ne 0) {        
+        $errors = $errors -join "`n"
+    }
+}
+catch {
+    write-error "$_" | Tee-Object -FilePath $globalLogFile -Append
+}
+
 $restoreJobs = Import-Csv -Path $restoreJobCsv
 
 $restoreJobStatus = foreach ($job in $restoreJobs) {
@@ -37,7 +49,7 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
     [xml] $jobStatus = try {
         qlist job -j $job.jobId -co iosprdc -format xml | Tee-Object -FilePath $globalLogFile -Append
         
-        if ($lastexitcode -ne 0) {        
+        if ($lastexitcode -ne 0) {
             $errors = $errors -join "`n"
         } else {
             [PSCustomObject]@{
@@ -54,6 +66,18 @@ $restoreJobStatus = foreach ($job in $restoreJobs) {
     }   
 
 }
+
+# Logout from Commvault
+try{
+    & qlogout.exe | Tee-Object -FilePath $globalLogFile -Append
+if ($lastexitcode -ne 0) {        
+        $errors = $errors -join "`n"
+    }
+}
+catch {
+    write-error "$_" | Tee-Object -FilePath $globalLogFile -Append
+}
+
 
 # Throw any errors
 If ($errors) {
